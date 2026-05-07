@@ -1,0 +1,7 @@
+PCB files/**/History/
+PCB files/**/*-backups/
+
+# Ignore backup/temp files
+PCB files/**/*.bak
+PCB files/**/*.tmp
+PCB files/**/*.log

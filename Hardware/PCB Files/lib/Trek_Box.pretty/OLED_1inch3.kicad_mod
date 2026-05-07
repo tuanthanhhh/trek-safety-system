@@ -1,0 +1,147 @@
+(footprint "OLED_1inch3"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -0.5 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "dc96f551-3fcf-4db4-b454-8fae6a7bab42")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "OLED_1inch3"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "e5144d8b-cbea-43ff-8e99-ea0f9cd34028")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "defdbb28-9463-438a-8ece-80a06b339c62")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "e746aa36-216e-47e5-8ccc-5ad6c4c0d29d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_rect
+		(start -17.7 -16.75)
+		(end 17.7 16.75)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "5c0b4da3-ba3c-49bd-9768-72218506954e")
+	)
+	(fp_rect
+		(start -5.25 -17.25)
+		(end 5.25 -14.75)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "199a1bdc-5932-468f-93d7-6071b1c54a77")
+	)
+	(fp_circle
+		(center -15.5 -14.5)
+		(end -13.75 -14.5)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "f8ae1d0d-3734-4eb0-916f-d115b318a7c1")
+	)
+	(fp_circle
+		(center -15.5 14.5)
+		(end -13.75 14.5)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "31f9ebcf-a1c6-4308-85be-3e936f6f839c")
+	)
+	(fp_circle
+		(center 15.25 14.5)
+		(end 17 14.5)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "a99a5194-f165-4810-9f7d-2ab6d4c9603a")
+	)
+	(fp_circle
+		(center 15.5 -14.5)
+		(end 17.25 -14.5)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "c562d3c1-c0d5-4187-857d-65d0f1968aff")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 2.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "ce7737a0-7538-49bc-ac3f-20c68d2b98bf")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/lib/3D/Display 1.3 OLED (Mauro) v5.step"
+		(offset
+			(xyz 0 0 2.5)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -0 -0 -0)
+		)
+	)
+)
