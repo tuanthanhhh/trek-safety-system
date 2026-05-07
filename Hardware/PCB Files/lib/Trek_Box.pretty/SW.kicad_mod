@@ -1,0 +1,233 @@
+(footprint "SW"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -0.5 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "e696479a-e524-4e32-998f-007a50c605a0")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "SW"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "d219e9f5-df21-4e26-91dc-fef51b7dd55f")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Footprint" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "95054fcc-4e24-4e9e-8a20-97e1b2376366")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "c84fd2ce-760e-4866-9bac-804eeb130e73")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "256af852-eaf2-4bd6-8903-50c6e12cd838")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -2.4 -2.5)
+		(end -2.4 -2.45)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "684c5df5-ccfb-4880-838f-fb51e6b4c4d7")
+	)
+	(fp_line
+		(start -2.4 -2.5)
+		(end 2.5 -2.5)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "4464ec3d-6bab-4e1e-9a20-90ffcfd7d672")
+	)
+	(fp_line
+		(start -2.4 -0.8)
+		(end -2.4 0.7)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "85beccf9-daf3-48b8-a33e-1af02522d0db")
+	)
+	(fp_line
+		(start -2.4 2.4)
+		(end -2.4 2.35)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b680a46f-90ed-4cbc-84d2-7e7931bc643e")
+	)
+	(fp_line
+		(start -2.4 2.4)
+		(end 2.5 2.4)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "571de938-9383-4e7e-a263-4c8db5543361")
+	)
+	(fp_line
+		(start 2.5 -2.5)
+		(end 2.5 -2.45)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "8523fcb7-80ab-48ab-8281-ad4904a5f1fa")
+	)
+	(fp_line
+		(start 2.5 -0.8)
+		(end 2.5 0.7)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "7cd89ae9-4cb2-4684-8627-7716a03ecba5")
+	)
+	(fp_line
+		(start 2.5 2.4)
+		(end 2.5 2.35)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b8578838-6e1a-422f-a684-2a178f153dd4")
+	)
+	(fp_rect
+		(start -3.6 -2.75)
+		(end 3.7 2.65)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill none)
+		(layer "F.CrtYd")
+		(uuid "7c3ec4cc-977f-4def-85ba-2b7227db2fde")
+	)
+	(fp_rect
+		(start -2.2 -2.3)
+		(end 2.3 2.2)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill none)
+		(layer "F.Fab")
+		(uuid "77b10bf2-b3ea-4a75-8562-00efe8d467dc")
+	)
+	(fp_circle
+		(center 0.05 -0.05)
+		(end 1.2 -0.05)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill none)
+		(layer "F.Fab")
+		(uuid "19f60c45-975d-41ac-9ded-ff1a1cf5ecdd")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0.05 -4.1 0)
+		(layer "F.Fab")
+		(uuid "ce0ca73d-8ae5-400f-90c3-cec69a404b51")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd roundrect
+		(at -2.575 -1.55)
+		(size 1.55 1)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(roundrect_rratio 0.25)
+		(uuid "f3570104-4232-4349-9aef-3fd9fcc20ea1")
+	)
+	(pad "1" smd roundrect
+		(at 2.675 -1.55)
+		(size 1.55 1)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(roundrect_rratio 0.25)
+		(uuid "028972db-3c44-4805-9429-f4f67d591c0e")
+	)
+	(pad "2" smd roundrect
+		(at -2.575 1.45)
+		(size 1.55 1)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(roundrect_rratio 0.25)
+		(uuid "3415c55b-5c91-4a6a-bbbb-7d207a74c5cb")
+	)
+	(pad "2" smd roundrect
+		(at 2.675 1.45)
+		(size 1.55 1)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(roundrect_rratio 0.25)
+		(uuid "fb006e20-f2ae-465b-a10d-f24e169995f4")
+	)
+	(model "${KICAD8_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_SPST_PTS647Sx38.wrl"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)
