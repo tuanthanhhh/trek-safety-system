@@ -1,4 +1,5 @@
 **/History/
+*.history
 # Backup
 *-backups/
 *.bak
