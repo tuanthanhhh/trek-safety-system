@@ -1,8 +1,13 @@
-/
-PCB files/**/History/
-PCB files/**/*-backups/
+# Backup
+*-backups/
+*.bak
 
-# Ignore backup/temp files
-PCB files/**/*.bak
-PCB files/**/*.tmp
-PCB files/**/*.log
+# Local settings
+*.kicad_prl
+
+# Cache
+_fp-info-cache
+
+# Output
+gerber/
+drill/
