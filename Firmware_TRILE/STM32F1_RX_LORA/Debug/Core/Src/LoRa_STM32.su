@@ -1,0 +1,17 @@
+../Core/Src/LoRa_STM32.c:9:16:LoRa_singleTransfer	32	static
+../Core/Src/LoRa_STM32.c:28:6:LoRa_writeRegister	16	static
+../Core/Src/LoRa_STM32.c:32:9:LoRa_readRegister	16	static
+../Core/Src/LoRa_STM32.c:36:13:LoRa_explicitHeaderMode	16	static
+../Core/Src/LoRa_STM32.c:41:13:LoRa_implicitHeaderMode	16	static
+../Core/Src/LoRa_STM32.c:46:6:LoRa_setTxPower	24	static
+../Core/Src/LoRa_STM32.c:71:9:LoRa_begin	24	static
+../Core/Src/LoRa_STM32.c:107:6:LoRa_setFrequency	32	static
+../Core/Src/LoRa_STM32.c:115:5:LoRa_beginPacket	16	static
+../Core/Src/LoRa_STM32.c:127:5:LoRa_endPacket	16	static
+../Core/Src/LoRa_STM32.c:137:8:LoRa_write_buffer	32	static
+../Core/Src/LoRa_STM32.c:149:5:LoRa_parsePacket	24	static
+../Core/Src/LoRa_STM32.c:174:5:LoRa_read	16	static
+../Core/Src/LoRa_STM32.c:180:5:LoRa_available	16	static
+../Core/Src/LoRa_STM32.c:184:6:LoRa_idle	16	static
+../Core/Src/LoRa_STM32.c:188:6:LoRa_sleep	16	static
+../Core/Src/LoRa_STM32.c:193:6:LoRa_handleDio0Rise	24	static

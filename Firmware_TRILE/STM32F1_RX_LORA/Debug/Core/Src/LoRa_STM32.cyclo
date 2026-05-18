@@ -1,0 +1,17 @@
+LoRa_STM32.c:9:16:LoRa_singleTransfer	1
+LoRa_STM32.c:28:6:LoRa_writeRegister	1
+LoRa_STM32.c:32:9:LoRa_readRegister	1
+LoRa_STM32.c:36:13:LoRa_explicitHeaderMode	1
+LoRa_STM32.c:41:13:LoRa_implicitHeaderMode	1
+LoRa_STM32.c:46:6:LoRa_setTxPower	6
+LoRa_STM32.c:71:9:LoRa_begin	3
+LoRa_STM32.c:107:6:LoRa_setFrequency	1
+LoRa_STM32.c:115:5:LoRa_beginPacket	2
+LoRa_STM32.c:127:5:LoRa_endPacket	2
+LoRa_STM32.c:137:8:LoRa_write_buffer	3
+LoRa_STM32.c:149:5:LoRa_parsePacket	6
+LoRa_STM32.c:174:5:LoRa_read	2
+LoRa_STM32.c:180:5:LoRa_available	1
+LoRa_STM32.c:184:6:LoRa_idle	1
+LoRa_STM32.c:188:6:LoRa_sleep	1
+LoRa_STM32.c:193:6:LoRa_handleDio0Rise	4
