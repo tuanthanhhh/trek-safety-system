@@ -1,0 +1,15 @@
+**/History/
+*.history
+# Backup
+*-backups/
+*.bak
+
+# Local settings
+*.kicad_prl
+
+# Cache
+_fp-info-cache
+
+# Output
+gerber/
+drill/
