@@ -1,5 +1,0 @@
-LoRa_Frame.c:39:10:calculate_crc16	6
-LoRa_Frame.c:63:6:Lora_Test_Frame	1
-LoRa_Frame.c:83:6:Lora_Init	2
-LoRa_Frame.c:137:9:LoRa_Read_Frame	4
-LoRa_Frame.c:171:9:LoRa_Send_Frame	3
