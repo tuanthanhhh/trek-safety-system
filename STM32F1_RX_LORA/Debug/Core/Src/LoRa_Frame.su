@@ -1,0 +1,5 @@
+../Core/Src/LoRa_Frame.c:39:10:calculate_crc16	24	static
+../Core/Src/LoRa_Frame.c:63:6:Lora_Test_Frame	24	static
+../Core/Src/LoRa_Frame.c:83:6:Lora_Init	96	static
+../Core/Src/LoRa_Frame.c:137:9:LoRa_Read_Frame	24	static
+../Core/Src/LoRa_Frame.c:171:9:LoRa_Send_Frame	24	static
