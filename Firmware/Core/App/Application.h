@@ -16,27 +16,44 @@ void App_Weather();
 void App_CurrentTime();
 void App_UI();
 
-void App_Trekking_Init();
+void Calib_Compass();
+void Finish_Calib_Compass();
 
-extern BME280_Data_t BME280;
+void App_Trekking_Init();
+void BME280_Init();
 
 extern uint8_t DS3231_hour;
 extern uint8_t DS3231_minute;
 extern uint8_t DS3231_second;
+extern uint8_t DS3231_day;
+extern uint8_t DS3231_date;
+extern uint8_t DS3231_month;
+extern uint8_t DS3231_year;
 
 extern double accel_g[3];
 extern double roll;
 extern double pitch;
 extern double heading;
 
+typedef struct {
+    int16_t x_min;
+    int16_t x_max;
 
-typedef enum UI_State {
-	Main_Screen,
-	Menu_Screen_1,
-	Menu_Screen_2,
-	Digital_Compass_Screen,
-	Weather_Screen,
-	GPS_Screen
-};
+    int16_t y_min;
+    int16_t y_max;
+
+    float x_offset;
+    float y_offset;
+    float z_offset;
+
+    float x_scale;
+    float y_scale;
+    float z_scale;
+
+    uint8_t calibrated;
+}MagCalib_t;
+
+
+
 
 #endif /* APP_APPLICATION_H_ */

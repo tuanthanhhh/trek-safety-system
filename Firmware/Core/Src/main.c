@@ -29,6 +29,8 @@
 #include "BME280.h"
 #include "math.h"
 #include "Application.h"
+#include "bitmap.h"
+#include "UI.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,8 +107,15 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   App_Trekking_Init();
-  Sensor_Init();
 
+
+  SH1106_Clear();
+//  DS3231_SetHour(22);
+//  DS3231_SetMinute(48);
+	DS3231_SetDayOfWeek(6);
+	DS3231_SetDate(16);
+	DS3231_SetMonth(5);
+	DS3231_SetYear(2026);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,11 +125,24 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  App_Weather();
-	  App_CurrentTime();
-	  App_Compass();
-	  App_UI();
-	  HAL_Delay(100);
+//	  App_Weather();
+
+//	  App_Compass();
+	  switch(UI_state)
+	  {
+	  case Main_Screen:
+		  App_CurrentTime();
+		  Update_Main_Screen();
+		  break;
+	  case Digital_Compass_Screen:
+		  Compass_UI();
+		  break;
+	  case Digital_Compass_Calib_Screen:
+		  Calib_Compass();
+		  break;
+	  default: break;
+	  }
+	  HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }
@@ -315,33 +337,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(LORA_DIO0_GPIO_Port, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-void Sensor_Init(void)
-{
 
-  //Init structure definition section
-	BME280_Init_t BME280_InitStruct = {0};
-
-	//Reset section
-	Reset_BME280();
-
-	/*============================ *BME280 Initialization* ============================*/
-
-	BME280_InitStruct.Filter = FILTER_8;     				//FILTER_X
-	BME280_InitStruct.Mode = BME280_NORMAL_MODE;		 	//SLEEP, NORMAL or FORCE can be written
-	BME280_InitStruct.OverSampling_H = OVERSAMPLING_16;		//OVERSAMPLING_X
-	BME280_InitStruct.OverSampling_P = OVERSAMPLING_16;		//OVERSAMPLING_X
-	BME280_InitStruct.OverSampling_T = OVERSAMPLING_16;		//OVERSAMPLING_X
-	BME280_InitStruct.SPI_EnOrDıs = SPI3_W_DISABLE;			//SPI3_W_DISABLE or SPI3_W_ENABLE can be written
-	BME280_InitStruct.T_StandBy = T_SB_250;					//T_SB_X
-
-	BME280Init(BME280_InitStruct);
-}
 /* USER CODE END 4 */
 
 /**

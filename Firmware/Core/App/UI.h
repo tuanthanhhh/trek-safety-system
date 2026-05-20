@@ -1,0 +1,60 @@
+/*
+ * UI.h
+ *
+ *  Created on: May 16, 2026
+ *      Author: THANHLT
+ */
+
+#ifndef APP_UI_H_
+#define APP_UI_H_
+#include <stdint.h>
+
+void Update_UI_Action(uint8_t action);
+void Update_Up_Action();
+void Update_Down_Action();
+void Update_Left_Action();
+void Update_Right_Action();
+void Update_Select_Action();
+void Update_Main_Screen();
+
+void Settings_None_UI();
+void Settings_Hour_UI();
+void Settings_Minute_UI();
+void Settings_Second_UI();
+
+void Menu_UI();
+void Compass_UI();
+
+typedef enum{
+	Main_Screen,
+	Menu_Screen_Compass,
+	Menu_Screen_Settings,
+	Menu_Screen_GPS,
+	Digital_Compass_Screen,
+	Digital_Compass_Calib_Screen,
+	Weather_Screen,
+	GPS_Screen,
+	Settings_Time_Screen
+}UI_State_t;
+
+extern UI_State_t UI_state;
+typedef enum Button_Action{
+	Button_Up,
+	Button_Down,
+	Button_Right,
+	Button_Left,
+	Button_Select
+}Button_Action_t;
+
+typedef enum{
+	Settings_Hour_Index,
+	Settings_Minute_Index,
+	Settings_Second_Index,
+	Settings_Day_Index,
+	Settings_Date_Index,
+	Settings_Year_Index,
+	Settings_None_Index
+}Settings_Index_t;
+
+extern Settings_Index_t Settings_Index;
+#endif /* APP_UI_H_ */

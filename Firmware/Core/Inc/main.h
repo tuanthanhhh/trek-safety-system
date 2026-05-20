@@ -59,24 +59,32 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define SW_LEFT_Pin GPIO_PIN_7
 #define SW_LEFT_GPIO_Port GPIOE
+#define SW_LEFT_EXTI_IRQn EXTI9_5_IRQn
 #define SW_DOWN_Pin GPIO_PIN_8
 #define SW_DOWN_GPIO_Port GPIOE
+#define SW_DOWN_EXTI_IRQn EXTI9_5_IRQn
 #define SW_RIGHT_Pin GPIO_PIN_9
 #define SW_RIGHT_GPIO_Port GPIOE
+#define SW_RIGHT_EXTI_IRQn EXTI9_5_IRQn
 #define SW_SELECT_Pin GPIO_PIN_10
 #define SW_SELECT_GPIO_Port GPIOE
+#define SW_SELECT_EXTI_IRQn EXTI15_10_IRQn
 #define SW_UP_Pin GPIO_PIN_11
 #define SW_UP_GPIO_Port GPIOE
+#define SW_UP_EXTI_IRQn EXTI15_10_IRQn
 #define LSM_INT1_Pin GPIO_PIN_13
 #define LSM_INT1_GPIO_Port GPIOE
+#define LSM_INT1_EXTI_IRQn EXTI15_10_IRQn
 #define LSM_INT2_Pin GPIO_PIN_14
 #define LSM_INT2_GPIO_Port GPIOE
+#define LSM_INT2_EXTI_IRQn EXTI15_10_IRQn
 #define LORA_CS_Pin GPIO_PIN_0
 #define LORA_CS_GPIO_Port GPIOD
 #define LORA_RST_Pin GPIO_PIN_1
 #define LORA_RST_GPIO_Port GPIOD
 #define LORA_DIO0_Pin GPIO_PIN_2
 #define LORA_DIO0_GPIO_Port GPIOD
+#define LORA_DIO0_EXTI_IRQn EXTI2_IRQn
 
 /* USER CODE BEGIN Private defines */
 
