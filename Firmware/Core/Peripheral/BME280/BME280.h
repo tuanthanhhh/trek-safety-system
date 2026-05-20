@@ -138,5 +138,6 @@ uint32_t BME280_measure_Press(int32_t adc_P);
 int32_t BME280_measure_Temp(int32_t adc_T);
 
 void Reset_BME280(void);
+extern BME280_Data_t BME280;
 
 #endif /* INC_BME280_H_ */
