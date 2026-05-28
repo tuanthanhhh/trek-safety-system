@@ -14,6 +14,7 @@
 #include "Application.h"
 #include "math.h"
 #include "UI.h"
+#include "gps_gp02.h"
 
 
 BME280_Data_t BME280;
@@ -42,6 +43,7 @@ static MagCalib_t mag_calib = {
 
 void App_Trekking_Init()
 {
+	GPS_Init();
 	SH1106_Init();
 	BME280_Init();
 	DS3231_Init(&hi2c2);
@@ -105,6 +107,30 @@ void App_Weather()
 {
 	  BME280Calculation(&BME280);
 	  char buffer[50];
+}
+void App_GPS()
+{
+	GPS_Process_Loop();
+	if (current_gps.is_valid)
+	{
+		char buffer[20];
+//		tx_lora_frame.gps.lat = current_gps.latitude;
+//		tx_lora_frame.gps.lng = current_gps.longitude;
+
+		sprintf(buffer,"%f",current_gps.latitude);
+		SH1106_GotoXY(1, 0);
+		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+		sprintf(buffer,"%f",current_gps.longitude);
+		SH1106_GotoXY(1, 12);
+		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+		SH1106_UpdateScreen();
+	}
+	else
+	{
+		SH1106_GotoXY(1, 0);
+		SH1106_Puts("Waiting ...", &Font_7x10, SH1106_COLOR_WHITE);
+		SH1106_UpdateScreen();
+	}
 }
 void App_CurrentTime()
 {

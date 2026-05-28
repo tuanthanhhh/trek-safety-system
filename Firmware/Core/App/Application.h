@@ -15,6 +15,7 @@ void App_Compass();
 void App_Weather();
 void App_CurrentTime();
 void App_UI();
+void App_GPS();
 
 void Calib_Compass();
 void Finish_Calib_Compass();

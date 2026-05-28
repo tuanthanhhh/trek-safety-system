@@ -181,6 +181,8 @@ void Update_Left_Action()
 		UI_state = Digital_Compass_Calib_Screen;
 		break;
 	case Digital_Compass_Screen:
+		Menu_UI();
+		break;
 	case Menu_Screen_Compass:
 	case Menu_Screen_GPS:
 	case Menu_Screen_Settings:
@@ -199,10 +201,15 @@ void Update_Left_Action()
 			break;
 		case Settings_None_Index:
 			Menu_UI();
+			break;
 		case Settings_Second_Index:
 			Settings_Minute_UI();
 			break;
 		}
+		break;
+		case GPS_Screen:
+			Menu_UI();
+			break;
 		default: break;
 	}
 }
@@ -239,11 +246,16 @@ void Update_Select_Action()
 		Menu_UI();
 		break;
 	case Menu_Screen_Settings:
+		SH1106_Clear();
 		Settings_None_UI();
 		break;
 	case Menu_Screen_Compass:
 		SH1106_Clear();
 		Compass_UI();
+		break;
+	case Menu_Screen_GPS:
+		SH1106_Clear();
+		UI_state = GPS_Screen;
 		break;
 	default: break;
 	}
@@ -338,3 +350,4 @@ void Compass_UI()
 //	UI_state = Digital_Compass_Screen;
 //	SH1106_UpdateScreen();
 }
+

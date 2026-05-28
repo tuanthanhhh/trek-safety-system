@@ -78,8 +78,8 @@ void Error_Handler(void);
 #define LSM_INT2_Pin GPIO_PIN_14
 #define LSM_INT2_GPIO_Port GPIOE
 #define LSM_INT2_EXTI_IRQn EXTI15_10_IRQn
-#define LORA_CS_Pin GPIO_PIN_0
-#define LORA_CS_GPIO_Port GPIOD
+#define BUZZER_CTR_Pin GPIO_PIN_9
+#define BUZZER_CTR_GPIO_Port GPIOD
 #define LORA_RST_Pin GPIO_PIN_1
 #define LORA_RST_GPIO_Port GPIOD
 #define LORA_DIO0_Pin GPIO_PIN_2
