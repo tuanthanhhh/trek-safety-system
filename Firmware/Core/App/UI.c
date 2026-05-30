@@ -11,12 +11,17 @@
 #include "Application.h"
 #include "fonts.h"
 #include "DS3231.h"
+#include <math.h>
+#include <stdio.h>
+#define DEG_TO_RAD 0.0174532925f
 
 UI_State_t UI_state = Main_Screen;
-const char *date_str[7] = {"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+const char *day_str[7] = {"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
 const char *month_str[12] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
 Settings_Index_t Settings_Index = Settings_None_Index;
 uint8_t hour_temp, minute_temp, second_temp;
+uint8_t date_temp, day_temp, month_temp;
+uint16_t year_temp;
 void Update_UI_Action(uint8_t action)
 {
 	switch(action)
@@ -100,6 +105,58 @@ void Update_Up_Action()
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
 			SH1106_UpdateScreen();
 			break;
+		case Settings_Day_Index:
+			if(day_temp == 6)
+			{
+				day_temp = 0;
+			}
+			else
+			{
+				day_temp++;
+			}
+			sprintf(buffer, "Day: %s", day_str[day_temp]);
+			SH1106_GotoXY(1, 12);
+			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+			SH1106_UpdateScreen();
+			break;
+		case Settings_Date_Index:
+			if(date_temp >= 31)
+			{
+				date_temp = 1;
+			}
+			else
+			{
+				date_temp++;
+			}
+			sprintf(buffer, "%02d", date_temp);
+			SH1106_GotoXY(42, 25);
+			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+			SH1106_UpdateScreen();
+			break;
+		case Settings_Month_Index:
+			if(month_temp >= 12)
+			{
+				month_temp = 1;
+			}
+			else
+			{
+				month_temp++;
+			}
+			sprintf(buffer, "%02d", month_temp);
+			SH1106_GotoXY(63, 25);
+			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+			SH1106_UpdateScreen();
+			break;
+		case Settings_Year_Index:
+			if(year_temp < 9999)
+			{
+				year_temp++;
+			}
+			sprintf(buffer, "%04d", year_temp);
+			SH1106_GotoXY(84, 25);
+			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+			SH1106_UpdateScreen();
+			break;
 		default: break;
 		}
 	default: break;
@@ -166,6 +223,58 @@ void Update_Down_Action()
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
 			SH1106_UpdateScreen();
 			break;
+		case Settings_Day_Index:
+			if(day_temp == 0)
+			{
+				day_temp = 6;
+			}
+			else
+			{
+				day_temp--;
+			}
+			sprintf(buffer, "Day: %s", day_str[day_temp]);
+			SH1106_GotoXY(1, 12);
+			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+			SH1106_UpdateScreen();
+			break;
+		case Settings_Date_Index:
+			if(date_temp <= 1)
+			{
+				date_temp = 31;
+			}
+			else
+			{
+				date_temp--;
+			}
+			sprintf(buffer, "%02d", date_temp);
+			SH1106_GotoXY(42, 25);
+			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+			SH1106_UpdateScreen();
+			break;
+		case Settings_Month_Index:
+			if(month_temp <= 1)
+			{
+				month_temp = 12;
+			}
+			else
+			{
+				month_temp--;
+			}
+			sprintf(buffer, "%02d", month_temp);
+			SH1106_GotoXY(63, 25);
+			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+			SH1106_UpdateScreen();
+			break;
+		case Settings_Year_Index:
+			if(year_temp > 0)
+			{
+				year_temp--;
+			}
+			sprintf(buffer, "%04d", year_temp);
+			SH1106_GotoXY(84, 25);
+			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+			SH1106_UpdateScreen();
+			break;
 		default: break;
 		}
 		break;
@@ -205,6 +314,18 @@ void Update_Left_Action()
 		case Settings_Second_Index:
 			Settings_Minute_UI();
 			break;
+		case Settings_Day_Index:
+			Settings_Second_UI();
+			break;
+		case Settings_Date_Index:
+			Settings_Day_UI();
+			break;
+		case Settings_Month_Index:
+			Settings_Date_UI();
+			break;
+		case Settings_Year_Index:
+			Settings_Month_UI();
+			break;
 		}
 		break;
 		case GPS_Screen:
@@ -233,6 +354,18 @@ void Update_Right_Action()
 		case Settings_Minute_Index:
 			Settings_Second_UI();
 			break;
+		case Settings_Second_Index:
+			Settings_Day_UI();
+			break;
+		case Settings_Day_Index:
+			Settings_Date_UI();
+			break;
+		case Settings_Date_Index:
+			Settings_Month_UI();
+			break;
+		case Settings_Month_Index:
+			Settings_Year_UI();
+			break;
 		default: break;
 		}
 		break;
@@ -251,11 +384,29 @@ void Update_Select_Action()
 		break;
 	case Menu_Screen_Compass:
 		SH1106_Clear();
+	    int cx = 64;
+	    int cy = 32;
+	    int r  = 28;
+
+	    SH1106_DrawCircle(cx, cy, r, SH1106_COLOR_WHITE);
+
+	    SH1106_DrawLine(cx, cy + 8, cx, cy - 18, SH1106_COLOR_WHITE);
+	    SH1106_DrawLine(cx, cy - 18, cx - 4, cy - 10, SH1106_COLOR_WHITE);
+	    SH1106_DrawLine(cx, cy - 18, cx + 4, cy - 10, SH1106_COLOR_WHITE);
+
+	    SH1106_DrawFilledCircle(cx, cy, 2, SH1106_COLOR_WHITE);
+
+	    SH1106_UpdateScreen();
 		Compass_UI();
+		UI_state = Digital_Compass_Screen;
 		break;
 	case Menu_Screen_GPS:
 		SH1106_Clear();
 		UI_state = GPS_Screen;
+		break;
+	case Settings_Time_Screen:
+		SH1106_Clear();
+		Settings_None_UI();
 		break;
 	default: break;
 	}
@@ -265,7 +416,33 @@ void Update_Main_Screen()
 {
 	char buffer[20];
 	SH1106_DrawBitmap(112, 1, icon_battery, 13, 8, SH1106_COLOR_WHITE);
-	sprintf(buffer, "%s,%02d %s",date_str[DS3231_day],DS3231_date,month_str[DS3231_month]);
+
+	float battery_percent = ( Voltage - 3.4)/0.006;
+	if(battery_percent < 10)
+	{
+		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(117, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+	}
+	else if(battery_percent < 30)
+	{
+		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(117, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+	}
+	else if (battery_percent < 60)
+	{
+		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(117, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+	}
+	else
+	{
+		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(117, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+	}
+	sprintf(buffer, "%s,%02d %s",day_str[DS3231_day],DS3231_date,month_str[DS3231_month]);
 	SH1106_GotoXY((128-strlen(buffer)*7)/2, 30);
 	SH1106_Puts(buffer, &Font_7x10, 1);
 	sprintf(buffer, "%02d:%02d", DS3231_hour,DS3231_minute);
@@ -283,18 +460,46 @@ void Settings_None_UI()
 		DS3231_SetHour(hour_temp);
 		DS3231_SetMinute(minute_temp);
 		DS3231_SetSecond(second_temp);
+
+		DS3231_SetDayOfWeek(day_temp);
+		DS3231_SetDate(date_temp);
+		DS3231_SetMonth(month_temp);
+		DS3231_SetYear(year_temp);
+
 		sprintf(buffer, "Time: %02d:%02d:%02d", hour_temp, minute_temp, second_temp);
 		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
 		SH1106_DrawLine(42, 11, 56, 11, SH1106_COLOR_BLACK);
+
+		SH1106_GotoXY(1, 12);
+		sprintf(buffer, "Day: %s", day_str[day_temp]);
+		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+
+		SH1106_GotoXY(1, 25);
+		sprintf(buffer, "Date: %02d/%02d/%04d", date_temp, month_temp, year_temp);
+		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+
 	}
 	else
 	{
 		hour_temp = DS3231_hour;
 		minute_temp = DS3231_minute;
 		second_temp = DS3231_second;
+
+		date_temp = DS3231_date;
+		day_temp = DS3231_day;
+		month_temp = DS3231_month;
+		year_temp = DS3231_year;
 		SH1106_Clear();
 		SH1106_GotoXY(1, 0);
 		sprintf(buffer, "Time: %02d:%02d:%02d", hour_temp, minute_temp, second_temp);
+		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+
+		SH1106_GotoXY(1, 12);
+		sprintf(buffer, "Day: %s", day_str[day_temp]);
+		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+
+		SH1106_GotoXY(1, 25);
+		sprintf(buffer, "Date: %02d/%02d/%04d", date_temp, month_temp, year_temp);
 		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
 		UI_state = Settings_Time_Screen;
 	}
@@ -305,27 +510,61 @@ void Settings_None_UI()
 
 void Settings_Hour_UI()
 {
-	SH1106_DrawLine(42, 11, 56, 11, SH1106_COLOR_WHITE);
-	SH1106_DrawLine(63, 11, 77, 11, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(42, 10, 56, 10, SH1106_COLOR_WHITE);
+	SH1106_DrawLine(63, 10, 77, 10, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(36, 22, 57, 22, SH1106_COLOR_BLACK);
 	SH1106_UpdateScreen();
 	Settings_Index = Settings_Hour_Index;
 }
 void Settings_Minute_UI()
 {
-	SH1106_DrawLine(42, 11, 56, 11, SH1106_COLOR_BLACK);
-	SH1106_DrawLine(63, 11, 77, 11, SH1106_COLOR_WHITE);
-	SH1106_DrawLine(84, 11, 98, 11, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(42, 10, 56, 10, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(63, 10, 77, 10, SH1106_COLOR_WHITE);
+	SH1106_DrawLine(84, 10, 98, 10, SH1106_COLOR_BLACK);
 	SH1106_UpdateScreen();
 	Settings_Index = Settings_Minute_Index;
 }
 void Settings_Second_UI()
 {
-	SH1106_DrawLine(63, 11, 77, 11, SH1106_COLOR_BLACK);
-	SH1106_DrawLine(84, 11, 98, 11, SH1106_COLOR_WHITE);
+	SH1106_DrawLine(63, 10, 77, 10, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(84, 10, 98, 10, SH1106_COLOR_WHITE);
+	SH1106_DrawLine(36, 22, 57, 22, SH1106_COLOR_BLACK);
 	SH1106_UpdateScreen();
 	Settings_Index = Settings_Second_Index;
 }
 
+void Settings_Day_UI()
+{
+	SH1106_DrawLine(84, 10, 98, 10, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(36, 22, 57, 22, SH1106_COLOR_WHITE);
+	SH1106_UpdateScreen();
+	Settings_Index = Settings_Day_Index;
+}
+
+void Settings_Date_UI()
+{
+	SH1106_DrawLine(36, 22, 57, 22, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(42, 35, 56, 35, SH1106_COLOR_WHITE);
+	SH1106_DrawLine(63, 35, 77, 35, SH1106_COLOR_BLACK);
+	SH1106_UpdateScreen();
+	Settings_Index = Settings_Date_Index;
+}
+
+void Settings_Month_UI()
+{
+	SH1106_DrawLine(42, 35, 56, 35, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(63, 35, 77, 35, SH1106_COLOR_WHITE);
+	SH1106_DrawLine(84, 35, 112, 35, SH1106_COLOR_BLACK);
+	SH1106_UpdateScreen();
+	Settings_Index = Settings_Month_Index;
+}
+void Settings_Year_UI()
+{
+	SH1106_DrawLine(63, 35, 77, 35, SH1106_COLOR_BLACK);
+	SH1106_DrawLine(84, 35, 112, 35, SH1106_COLOR_WHITE);
+	SH1106_UpdateScreen();
+	Settings_Index = Settings_Year_Index;
+}
 void Menu_UI()
 {
 	SH1106_Clear();
@@ -342,12 +581,102 @@ void Menu_UI()
 
 void Compass_UI()
 {
+
 	App_Compass();
 //	char buffer[20];
 //	SH1106_GotoXY(1, 0);
 //	sprintf(buffer, "Heading: %5.1f", heading);
 //	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-//	UI_state = Digital_Compass_Screen;
 //	SH1106_UpdateScreen();
 }
 
+void UI_DrawCompassRotateDial(float heading)
+{
+    int cx = 64;
+    int cy = 32;
+    int r  = 28;
+    int text_r = r - 8;
+
+    static int old_nx = -100, old_ny = -100;
+    static int old_ex = -100, old_ey = -100;
+    static int old_sx = -100, old_sy = -100;
+    static int old_wx = -100, old_wy = -100;
+
+    float angleN = (0.0f   - heading - 90.0f) * DEG_TO_RAD;
+    float angleE = (90.0f  - heading - 90.0f) * DEG_TO_RAD;
+    float angleS = (180.0f - heading - 90.0f) * DEG_TO_RAD;
+    float angleW = (270.0f - heading - 90.0f) * DEG_TO_RAD;
+
+    int nx = cx + (int)(cosf(angleN) * text_r) - 3;
+    int ny = cy + (int)(sinf(angleN) * text_r) - 5;
+
+    int ex = cx + (int)(cosf(angleE) * text_r) - 3;
+    int ey = cy + (int)(sinf(angleE) * text_r) - 5;
+
+    int sx = cx + (int)(cosf(angleS) * text_r) - 3;
+    int sy = cy + (int)(sinf(angleS) * text_r) - 5;
+
+    int wx = cx + (int)(cosf(angleW) * text_r) - 3;
+    int wy = cy + (int)(sinf(angleW) * text_r) - 5;
+
+    /* Xóa vùng chữ cũ bằng rectangle */
+    SH1106_DrawFilledRectangle(old_nx - 1, old_ny - 1, 9, 12, SH1106_COLOR_BLACK);
+    SH1106_DrawFilledRectangle(old_ex - 1, old_ey - 1, 9, 12, SH1106_COLOR_BLACK);
+    SH1106_DrawFilledRectangle(old_sx - 1, old_sy - 1, 9, 12, SH1106_COLOR_BLACK);
+    SH1106_DrawFilledRectangle(old_wx - 1, old_wy - 1, 9, 12, SH1106_COLOR_BLACK);
+
+    /* Vẽ lại vòng tròn vì rectangle có thể xóa mất một phần vòng */
+    SH1106_DrawCircle(cx, cy, r, SH1106_COLOR_WHITE);
+
+    /* Vẽ lại mũi tên cố định */
+    SH1106_DrawLine(cx, cy + 8, cx, cy - 18, SH1106_COLOR_WHITE);
+    SH1106_DrawLine(cx, cy - 18, cx - 4, cy - 10, SH1106_COLOR_WHITE);
+    SH1106_DrawLine(cx, cy - 18, cx + 4, cy - 10, SH1106_COLOR_WHITE);
+    SH1106_DrawFilledCircle(cx, cy, 2, SH1106_COLOR_WHITE);
+
+    /* Vẽ chữ mới */
+    SH1106_GotoXY(nx, ny);
+    SH1106_Puts("N", &Font_7x10, SH1106_COLOR_WHITE);
+
+    SH1106_GotoXY(ex, ey);
+    SH1106_Puts("E", &Font_7x10, SH1106_COLOR_WHITE);
+
+    SH1106_GotoXY(sx, sy);
+    SH1106_Puts("S", &Font_7x10, SH1106_COLOR_WHITE);
+
+    SH1106_GotoXY(wx, wy);
+    SH1106_Puts("W", &Font_7x10, SH1106_COLOR_WHITE);
+
+    old_nx = nx;
+    old_ny = ny;
+    old_ex = ex;
+    old_ey = ey;
+    old_sx = sx;
+    old_sy = sy;
+    old_wx = wx;
+    old_wy = wy;
+
+    char heading_str[8];
+
+	/* Tạo chuỗi */
+	sprintf(heading_str, "%.1f", heading);
+
+	/* Vẽ heading */
+	SH1106_GotoXY(92, 40);
+	SH1106_Puts(heading_str, &Font_7x10, SH1106_COLOR_WHITE);
+
+    SH1106_UpdateScreen();
+}
+
+const char* CompassDirection(float heading)
+{
+    if(heading < 22.5f)   return "N";
+    if(heading < 67.5f)   return "NE";
+    if(heading < 112.5f)  return "E";
+    if(heading < 157.5f)  return "SE";
+    if(heading < 202.5f)  return "S";
+    if(heading < 247.5f)  return "SW";
+    if(heading < 292.5f)  return "W";
+    if(heading < 337.5f)  return "NW";
+    return "N";
+}

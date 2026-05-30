@@ -29,7 +29,9 @@ extern uint8_t DS3231_second;
 extern uint8_t DS3231_day;
 extern uint8_t DS3231_date;
 extern uint8_t DS3231_month;
-extern uint8_t DS3231_year;
+extern uint16_t DS3231_year;
+
+extern float Voltage;
 
 extern double accel_g[3];
 extern double roll;

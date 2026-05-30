@@ -21,9 +21,15 @@ void Settings_None_UI();
 void Settings_Hour_UI();
 void Settings_Minute_UI();
 void Settings_Second_UI();
+void Settings_Day_UI();
+void Settings_Date_UI();
+void Settings_Month_UI();
+void Settings_Year_UI();
 
 void Menu_UI();
 void Compass_UI();
+void UI_DrawCompassRotateDial(float heading);
+const char* CompassDirection(float heading);
 
 typedef enum{
 	Main_Screen,
@@ -52,6 +58,7 @@ typedef enum{
 	Settings_Second_Index,
 	Settings_Day_Index,
 	Settings_Date_Index,
+	Settings_Month_Index,
 	Settings_Year_Index,
 	Settings_None_Index
 }Settings_Index_t;
