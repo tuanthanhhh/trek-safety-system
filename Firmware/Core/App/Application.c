@@ -15,7 +15,9 @@
 #include "math.h"
 #include "UI.h"
 #include "gps_gp02.h"
+#include "slave_lora.h"
 
+#define HEADING_OFFSET	100
 
 BME280_Data_t BME280;
 uint8_t DS3231_hour;
@@ -109,6 +111,7 @@ void App_Compass()
 
 	/* Heading */
 	heading = atan2f(y_heading, x_heading) * 57.2957795f;
+	heading = heading + HEADING_OFFSET;
 
 	if (heading < 0.0f)
 	{
@@ -121,27 +124,6 @@ void App_Compass()
 
 	UI_DrawCompassRotateDial(heading);
 
-//	char buffer[20];
-//	SH1106_GotoXY(1, 0);
-//	sprintf(buffer, "Heading: %5.1f", heading);
-//	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-//	SH1106_GotoXY(1, 10);
-//	sprintf(buffer, "%.1f,%.1f", mx,my);
-//	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-//	UI_state = Digital_Compass_Screen;
-//	SH1106_GotoXY(1, 21);
-//	sprintf(buffer, "%.1f", accel_data[0]);
-//	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-//	UI_state = Digital_Compass_Screen;
-//	SH1106_GotoXY(1, 32);
-//	sprintf(buffer, "%.1f", accel_data[1]);
-//	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-//	UI_state = Digital_Compass_Screen;
-//	SH1106_GotoXY(1, 43);
-//	sprintf(buffer, "%.1f", accel_data[2]);
-//	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-//	UI_state = Digital_Compass_Screen;
-//	SH1106_UpdateScreen();
 }
 void App_Weather()
 {
@@ -150,7 +132,11 @@ void App_Weather()
 }
 void App_GPS()
 {
-	GPS_Process_Loop();
+	if(UI_state_old != UI_state)
+	{
+		SH1106_Clear();
+		UI_state_old = UI_state;
+	}
 	if (current_gps.is_valid)
 	{
 		char buffer[20];
@@ -163,14 +149,15 @@ void App_GPS()
 		sprintf(buffer,"%f",current_gps.longitude);
 		SH1106_GotoXY(1, 24);
 		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-		SH1106_UpdateScreen();
 	}
 	else
 	{
 		SH1106_GotoXY(1, 0);
 		SH1106_Puts("Waiting ...", &Font_7x10, SH1106_COLOR_WHITE);
-		SH1106_UpdateScreen();
+
 	}
+	SH1106_UpdateScreen();
+	HAL_Delay(UPDATE_SCREEN_TIME);
 }
 void App_CurrentTime()
 {
@@ -283,6 +270,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	case SW_RIGHT_Pin:
 		Update_Right_Action();
 		break;
+	case SW_SOS_Pin:
+		SOS_Action();
+		UI_state = SOS_Screen;
+		break;
 	default: break;
 	}
+}
+
+void SOS_Action()
+{
+	tx_lora_frame.cmd_lora = CMD_LORA_SOS;
+
 }

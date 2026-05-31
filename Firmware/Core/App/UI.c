@@ -13,15 +13,20 @@
 #include "DS3231.h"
 #include <math.h>
 #include <stdio.h>
+#include "slave_lora.h"
+#include "BME280.h"
 #define DEG_TO_RAD 0.0174532925f
 
+
 UI_State_t UI_state = Main_Screen;
+UI_State_t UI_state_old = Main_Screen;
 const char *day_str[7] = {"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
 const char *month_str[12] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
 Settings_Index_t Settings_Index = Settings_None_Index;
 uint8_t hour_temp, minute_temp, second_temp;
 uint8_t date_temp, day_temp, month_temp;
 uint16_t year_temp;
+float battery_percent;
 void Update_UI_Action(uint8_t action)
 {
 	switch(action)
@@ -51,13 +56,9 @@ void Update_Up_Action()
 	switch(UI_state)
 	{
 	case Menu_Screen_Settings:
-		SH1106_DrawBitmap(2, 0, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
-		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_BLACK);
 		UI_state = Menu_Screen_Compass;
 		break;
 	case Menu_Screen_GPS:
-		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
-		SH1106_DrawBitmap(2, 43, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_BLACK);
 		UI_state = Menu_Screen_Settings;
 		break;
 	case Settings_Time_Screen:
@@ -75,7 +76,6 @@ void Update_Up_Action()
 			sprintf(buffer, "%02d", hour_temp);
 			SH1106_GotoXY(42, 0);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Minute_Index:
 			if(minute_temp == 60)
@@ -89,7 +89,6 @@ void Update_Up_Action()
 			sprintf(buffer, "%02d", minute_temp);
 			SH1106_GotoXY(63, 0);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Second_Index:
 			if(second_temp == 60)
@@ -103,7 +102,6 @@ void Update_Up_Action()
 			sprintf(buffer, "%02d", second_temp);
 			SH1106_GotoXY(84, 0);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Day_Index:
 			if(day_temp == 6)
@@ -117,7 +115,6 @@ void Update_Up_Action()
 			sprintf(buffer, "Day: %s", day_str[day_temp]);
 			SH1106_GotoXY(1, 12);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Date_Index:
 			if(date_temp >= 31)
@@ -131,7 +128,6 @@ void Update_Up_Action()
 			sprintf(buffer, "%02d", date_temp);
 			SH1106_GotoXY(42, 25);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Month_Index:
 			if(month_temp >= 12)
@@ -145,7 +141,6 @@ void Update_Up_Action()
 			sprintf(buffer, "%02d", month_temp);
 			SH1106_GotoXY(63, 25);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Year_Index:
 			if(year_temp < 9999)
@@ -155,13 +150,13 @@ void Update_Up_Action()
 			sprintf(buffer, "%04d", year_temp);
 			SH1106_GotoXY(84, 25);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		default: break;
 		}
+		SH1106_UpdateScreen();
+		break;
 	default: break;
 	}
-	SH1106_UpdateScreen();
 }
 void Update_Down_Action()
 {
@@ -169,13 +164,9 @@ void Update_Down_Action()
 	switch(UI_state)
 	{
 	case Menu_Screen_Compass:
-		SH1106_DrawBitmap(2, 0, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_BLACK);
-		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
 		UI_state = Menu_Screen_Settings;
 		break;
 	case Menu_Screen_Settings:
-		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_BLACK);
-		SH1106_DrawBitmap(2, 43, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
 		UI_state = Menu_Screen_GPS;
 		break;
 	case Settings_Time_Screen:
@@ -193,7 +184,6 @@ void Update_Down_Action()
 			sprintf(buffer, "%02d", hour_temp);
 			SH1106_GotoXY(42, 0);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Minute_Index:
 			if(minute_temp == 0)
@@ -207,7 +197,6 @@ void Update_Down_Action()
 			sprintf(buffer, "%02d", minute_temp);
 			SH1106_GotoXY(63, 0);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Second_Index:
 			if(second_temp == 0)
@@ -221,7 +210,6 @@ void Update_Down_Action()
 			sprintf(buffer, "%02d", second_temp);
 			SH1106_GotoXY(84, 0);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Day_Index:
 			if(day_temp == 0)
@@ -235,7 +223,6 @@ void Update_Down_Action()
 			sprintf(buffer, "Day: %s", day_str[day_temp]);
 			SH1106_GotoXY(1, 12);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Date_Index:
 			if(date_temp <= 1)
@@ -249,7 +236,6 @@ void Update_Down_Action()
 			sprintf(buffer, "%02d", date_temp);
 			SH1106_GotoXY(42, 25);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Month_Index:
 			if(month_temp <= 1)
@@ -263,7 +249,6 @@ void Update_Down_Action()
 			sprintf(buffer, "%02d", month_temp);
 			SH1106_GotoXY(63, 25);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		case Settings_Year_Index:
 			if(year_temp > 0)
@@ -273,30 +258,24 @@ void Update_Down_Action()
 			sprintf(buffer, "%04d", year_temp);
 			SH1106_GotoXY(84, 25);
 			SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-			SH1106_UpdateScreen();
 			break;
 		default: break;
 		}
+		SH1106_UpdateScreen();
 		break;
 	default: break;
 	}
-	SH1106_UpdateScreen();
 }
 void Update_Left_Action()
 {
 	switch(UI_state)
 	{
-	case Main_Screen:
-		UI_state = Digital_Compass_Calib_Screen;
-		break;
 	case Digital_Compass_Screen:
-		Menu_UI();
+		UI_state = Menu_Screen_Compass;
 		break;
 	case Menu_Screen_Compass:
 	case Menu_Screen_GPS:
 	case Menu_Screen_Settings:
-		SH1106_Clear();
-		Update_Main_Screen();
 		UI_state = Main_Screen;
 		break;
 	case Settings_Time_Screen:
@@ -309,7 +288,7 @@ void Update_Left_Action()
 			Settings_None_UI();
 			break;
 		case Settings_None_Index:
-			Menu_UI();
+			UI_state = Menu_Screen_Settings;
 			break;
 		case Settings_Second_Index:
 			Settings_Minute_UI();
@@ -328,10 +307,10 @@ void Update_Left_Action()
 			break;
 		}
 		break;
-		case GPS_Screen:
-			Menu_UI();
-			break;
-		default: break;
+	case GPS_Screen:
+		UI_state = Menu_Screen_GPS;
+		break;
+	default: break;
 	}
 }
 void Update_Right_Action()
@@ -376,37 +355,28 @@ void Update_Select_Action()
 	switch(UI_state)
 	{
 	case Main_Screen:
-		Menu_UI();
-		break;
-	case Menu_Screen_Settings:
-		SH1106_Clear();
-		Settings_None_UI();
-		break;
-	case Menu_Screen_Compass:
-		SH1106_Clear();
-	    int cx = 64;
-	    int cy = 32;
-	    int r  = 28;
-
-	    SH1106_DrawCircle(cx, cy, r, SH1106_COLOR_WHITE);
-
-	    SH1106_DrawLine(cx, cy + 8, cx, cy - 18, SH1106_COLOR_WHITE);
-	    SH1106_DrawLine(cx, cy - 18, cx - 4, cy - 10, SH1106_COLOR_WHITE);
-	    SH1106_DrawLine(cx, cy - 18, cx + 4, cy - 10, SH1106_COLOR_WHITE);
-
-	    SH1106_DrawFilledCircle(cx, cy, 2, SH1106_COLOR_WHITE);
-
-	    SH1106_UpdateScreen();
-		Compass_UI();
-		UI_state = Digital_Compass_Screen;
-		break;
-	case Menu_Screen_GPS:
-		SH1106_Clear();
-		UI_state = GPS_Screen;
+		UI_state = Menu_Screen_Compass;
 		break;
 	case Settings_Time_Screen:
 		SH1106_Clear();
+		Settings_Index = Settings_None_Index;
 		Settings_None_UI();
+		break;
+	case Menu_Screen_Settings:
+		SH1106_Clear();
+		UI_state = Settings_Time_Screen;
+
+		Settings_None_UI();
+		break;
+	case Menu_Screen_Compass:
+		UI_state = Digital_Compass_Screen;
+		break;
+	case Menu_Screen_GPS:
+		UI_state = GPS_Screen;
+		break;
+	case SOS_Screen:
+		UI_state = Main_Screen;
+		tx_lora_frame.cmd_lora = CMD_LORA_TRACKING;
 		break;
 	default: break;
 	}
@@ -415,9 +385,25 @@ void Update_Select_Action()
 void Update_Main_Screen()
 {
 	char buffer[20];
+	if(UI_state != UI_state_old)
+	{
+		SH1106_Clear();
+		UI_state_old = UI_state;
+	}
 	SH1106_DrawBitmap(112, 1, icon_battery, 13, 8, SH1106_COLOR_WHITE);
 
-	float battery_percent = ( Voltage - 3.4)/0.006;
+	if(Voltage > 4.0f)
+	{
+		battery_percent = 100;
+	}
+	else if (Voltage < 3.4f)
+	{
+		battery_percent = 0;
+	}
+	else
+	{
+		battery_percent = ( Voltage - 3.4)/0.006;
+	}
 	if(battery_percent < 10)
 	{
 		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
@@ -443,12 +429,33 @@ void Update_Main_Screen()
 		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
 	}
 	sprintf(buffer, "%s,%02d %s",day_str[DS3231_day],DS3231_date,month_str[DS3231_month]);
-	SH1106_GotoXY((128-strlen(buffer)*7)/2, 30);
+//	SH1106_GotoXY((128-strlen(buffer)*7)/2, 30);
+	SH1106_GotoXY(1, 1);
 	SH1106_Puts(buffer, &Font_7x10, 1);
 	sprintf(buffer, "%02d:%02d", DS3231_hour,DS3231_minute);
-	SH1106_GotoXY((128-strlen(buffer)*11)/2, 44);
+//	SH1106_GotoXY((128-strlen(buffer)*11)/2, 44);
+	SH1106_GotoXY(1, 15);
 	SH1106_Puts(buffer, &Font_11x18, 1);
+
+	SH1106_GotoXY(1, 40);
+	SH1106_Puts("ID:", &Font_7x10, 1);
+	sprintf(buffer, "%02d", ID_DEVICE);
+	SH1106_GotoXY(1, 52);
+	SH1106_Puts(buffer, &Font_7x10, 1);
+
+	sprintf(buffer, "T:%3d~C", (int)BME280.Temperature);
+	SH1106_GotoXY(60, 40);
+	SH1106_Puts(buffer, &Font_7x10, 1);
+
+	sprintf(buffer, "H:%3d%%", (int)BME280.Humidity);
+	SH1106_GotoXY(60, 52);
+	SH1106_Puts(buffer, &Font_7x10, 1);
+
+	SH1106_DrawLine(50, 37, 50, 64, SH1106_COLOR_WHITE);
+	SH1106_DrawLine(0, 37, 128, 37, SH1106_COLOR_WHITE);
+
 	SH1106_UpdateScreen();
+	HAL_Delay(UPDATE_SCREEN_TIME);
 }
 
 void Settings_None_UI()
@@ -581,13 +588,23 @@ void Menu_UI()
 
 void Compass_UI()
 {
+	if(UI_state_old != UI_state)
+	{
+		SH1106_Clear();
+		int cx = 64;
+		int cy = 32;
+		int r  = 28;
 
+		SH1106_DrawCircle(cx, cy, r, SH1106_COLOR_WHITE);
+
+		SH1106_DrawLine(cx, cy + 8, cx, cy - 18, SH1106_COLOR_WHITE);
+		SH1106_DrawLine(cx, cy - 18, cx - 4, cy - 10, SH1106_COLOR_WHITE);
+		SH1106_DrawLine(cx, cy - 18, cx + 4, cy - 10, SH1106_COLOR_WHITE);
+
+		SH1106_DrawFilledCircle(cx, cy, 2, SH1106_COLOR_WHITE);
+		UI_state_old = UI_state;
+	}
 	App_Compass();
-//	char buffer[20];
-//	SH1106_GotoXY(1, 0);
-//	sprintf(buffer, "Heading: %5.1f", heading);
-//	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-//	SH1106_UpdateScreen();
 }
 
 void UI_DrawCompassRotateDial(float heading)
@@ -619,22 +636,18 @@ void UI_DrawCompassRotateDial(float heading)
     int wx = cx + (int)(cosf(angleW) * text_r) - 3;
     int wy = cy + (int)(sinf(angleW) * text_r) - 5;
 
-    /* Xóa vùng chữ cũ bằng rectangle */
     SH1106_DrawFilledRectangle(old_nx - 1, old_ny - 1, 9, 12, SH1106_COLOR_BLACK);
     SH1106_DrawFilledRectangle(old_ex - 1, old_ey - 1, 9, 12, SH1106_COLOR_BLACK);
     SH1106_DrawFilledRectangle(old_sx - 1, old_sy - 1, 9, 12, SH1106_COLOR_BLACK);
     SH1106_DrawFilledRectangle(old_wx - 1, old_wy - 1, 9, 12, SH1106_COLOR_BLACK);
 
-    /* Vẽ lại vòng tròn vì rectangle có thể xóa mất một phần vòng */
     SH1106_DrawCircle(cx, cy, r, SH1106_COLOR_WHITE);
 
-    /* Vẽ lại mũi tên cố định */
     SH1106_DrawLine(cx, cy + 8, cx, cy - 18, SH1106_COLOR_WHITE);
     SH1106_DrawLine(cx, cy - 18, cx - 4, cy - 10, SH1106_COLOR_WHITE);
     SH1106_DrawLine(cx, cy - 18, cx + 4, cy - 10, SH1106_COLOR_WHITE);
     SH1106_DrawFilledCircle(cx, cy, 2, SH1106_COLOR_WHITE);
 
-    /* Vẽ chữ mới */
     SH1106_GotoXY(nx, ny);
     SH1106_Puts("N", &Font_7x10, SH1106_COLOR_WHITE);
 
@@ -658,14 +671,66 @@ void UI_DrawCompassRotateDial(float heading)
 
     char heading_str[8];
 
-	/* Tạo chuỗi */
 	sprintf(heading_str, "%.1f", heading);
 
-	/* Vẽ heading */
 	SH1106_GotoXY(92, 40);
 	SH1106_Puts(heading_str, &Font_7x10, SH1106_COLOR_WHITE);
 
     SH1106_UpdateScreen();
+    HAL_Delay(UPDATE_SCREEN_TIME);
+}
+
+void SOS_UI()
+{
+	SH1106_Clear();
+	SH1106_DrawBitmap(112, 1, icon_battery, 13, 8, SH1106_COLOR_WHITE);
+
+	if(Voltage > 4.0f)
+	{
+		battery_percent = 100;
+	}
+	else if (Voltage < 3.4f)
+	{
+		battery_percent = 0;
+	}
+	else
+	{
+		battery_percent = ( Voltage - 3.4)/0.006;
+	}
+	if(battery_percent < 10)
+	{
+		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(117, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+	}
+	else if(battery_percent < 30)
+	{
+		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(117, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+	}
+	else if (battery_percent < 60)
+	{
+		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(117, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_BLACK);
+	}
+	else
+	{
+		SH1106_DrawBitmap(114, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(117, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(120, 3, pin_cell, 2, 4, SH1106_COLOR_WHITE);
+	}
+
+
+	SH1106_GotoXY(40, 15);
+	SH1106_Puts("SOS", &Font_16x26, 1);
+
+	SH1106_GotoXY(8, 45);
+	SH1106_Puts("Press OK to exit", &Font_7x10, 1);
+
+	SH1106_UpdateScreen();
+	UI_state = SOS_Screen;
 }
 
 const char* CompassDirection(float heading)
@@ -679,4 +744,78 @@ const char* CompassDirection(float heading)
     if(heading < 292.5f)  return "W";
     if(heading < 337.5f)  return "NW";
     return "N";
+}
+
+void Menu_Compass_UI()
+{
+	switch(UI_state_old)
+	{
+	case Menu_Screen_Settings:
+		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(2, 0, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
+		break;
+
+	default:
+		SH1106_Clear();
+		SH1106_DrawBitmap(7, 2, icon_compass, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(7, 24, icon_settings, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(7, 45, icon_GPS, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 7, Compass, 55 , 11, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 28, Settings, 58 , 11, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 50, GPS, 22 , 9, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(2, 0, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
+	}
+	SH1106_UpdateScreen();
+	HAL_Delay(UPDATE_SCREEN_TIME);
+	UI_state = Menu_Screen_Compass;
+}
+void Menu_Settings_UI()
+{
+	switch(UI_state_old)
+	{
+	case Menu_Screen_Compass:
+		SH1106_DrawBitmap(2, 0, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
+		break;
+	case Menu_Screen_GPS:
+		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(2, 43, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_BLACK);
+		break;
+	default:
+		SH1106_Clear();
+		SH1106_DrawBitmap(7, 2, icon_compass, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(7, 24, icon_settings, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(7, 45, icon_GPS, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 7, Compass, 55 , 11, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 28, Settings, 58 , 11, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 50, GPS, 22 , 9, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
+		break;
+	}
+
+	SH1106_UpdateScreen();
+	HAL_Delay(UPDATE_SCREEN_TIME);
+}
+void Menu_GPS_UI()
+{
+	switch(UI_state_old)
+	{
+	case Menu_Screen_Settings:
+		SH1106_DrawBitmap(2, 22, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_BLACK);
+		SH1106_DrawBitmap(2, 43, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
+		break;
+	default:
+		SH1106_Clear();
+		SH1106_DrawBitmap(7, 2, icon_compass, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(7, 24, icon_settings, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(7, 45, icon_GPS, 16, 16, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 7, Compass, 55 , 11, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 28, Settings, 58 , 11, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(30, 50, GPS, 22 , 9, SH1106_COLOR_WHITE);
+		SH1106_DrawBitmap(2, 43, selected_frame, SELECT_FRAME_WIDTH, SELECT_FRAME_HEIGHT, SH1106_COLOR_WHITE);
+		break;
+	}
+	SH1106_UpdateScreen();
+	HAL_Delay(UPDATE_SCREEN_TIME);
+	UI_state = Menu_Screen_GPS;
 }

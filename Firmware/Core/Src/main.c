@@ -31,6 +31,7 @@
 #include "Application.h"
 #include "bitmap.h"
 #include "UI.h"
+#include "slave_lora.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,7 +55,7 @@ ADC_HandleTypeDef hadc1;
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
-SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi3;
 
 TIM_HandleTypeDef htim1;
 
@@ -69,10 +70,10 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
-static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_SPI3_Init(void);
 /* USER CODE BEGIN PFP */
 void Sensor_Init(void);
 /* USER CODE END PFP */
@@ -113,13 +114,13 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
-  MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_TIM1_Init();
   MX_ADC1_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
   App_Trekking_Init();
-
+  Slave_Lora_Init(&hspi3, SPI3_CS_GPIO_Port, SPI3_CS_Pin, SPI3_RST_GPIO_Port, SPI3_RST_Pin, SPI3_DIO0_GPIO_Port, SPI3_DIO0_Pin);
 
   SH1106_Clear();
 //  DS3231_SetHour(22);
@@ -147,6 +148,27 @@ int main(void)
 		  App_CurrentTime();
 		  Update_Main_Screen();
 		  break;
+	  case Menu_Screen_Compass:
+		  if(UI_state_old != UI_state)
+		  {
+			  Menu_Compass_UI();
+			  UI_state_old = UI_state;
+		  }
+		  break;
+	  case Menu_Screen_Settings:
+		  if(UI_state_old != UI_state)
+		  {
+			  Menu_Settings_UI();
+			  UI_state_old = UI_state;
+		  }
+		  break;
+	  case Menu_Screen_GPS:
+		  if(UI_state_old != UI_state)
+		  {
+			  Menu_GPS_UI();
+			  UI_state_old = UI_state;
+		  }
+		  break;
 	  case Digital_Compass_Screen:
 		  Compass_UI();
 		  break;
@@ -156,9 +178,27 @@ int main(void)
 	  case GPS_Screen:
 		  App_GPS();
 		  break;
-	  default: break;
+	  case SOS_Screen:
+		  if(UI_state_old != UI_state)
+		  {
+			  SOS_UI();
+			  UI_state_old = UI_state;
+		  }
+
+	  default:
+		  UI_state_old = UI_state;
+		  break;
 	  }
-	  HAL_Delay(500);
+
+//	  HAL_Delay(500);
+	  App_Weather();
+	  GPS_Process_Loop();
+	  tx_lora_frame.batt = (uint8_t)battery_percent;
+	  tx_lora_frame.sensor.humi = (uint8_t)BME280.Humidity;
+	  tx_lora_frame.sensor.temp = (uint8_t)BME280.Temperature;
+	  tx_lora_frame.gps.lat = current_gps.latitude;
+	  tx_lora_frame.gps.lng = current_gps.longitude;
+	  Slave_Lora_Loop();
 	  HAL_ADC_Start_IT(&hadc1);
   }
   /* USER CODE END 3 */
@@ -326,40 +366,40 @@ static void MX_I2C2_Init(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
+  * @brief SPI3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SPI1_Init(void)
+static void MX_SPI3_Init(void)
 {
 
-  /* USER CODE BEGIN SPI1_Init 0 */
+  /* USER CODE BEGIN SPI3_Init 0 */
 
-  /* USER CODE END SPI1_Init 0 */
+  /* USER CODE END SPI3_Init 0 */
 
-  /* USER CODE BEGIN SPI1_Init 1 */
+  /* USER CODE BEGIN SPI3_Init 1 */
 
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  /* USER CODE END SPI3_Init 1 */
+  /* SPI3 parameter configuration*/
+  hspi3.Instance = SPI3;
+  hspi3.Init.Mode = SPI_MODE_MASTER;
+  hspi3.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi3.Init.NSS = SPI_NSS_SOFT;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi3.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi3) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI1_Init 2 */
+  /* USER CODE BEGIN SPI3_Init 2 */
 
-  /* USER CODE END SPI1_Init 2 */
+  /* USER CODE END SPI3_Init 2 */
 
 }
 
@@ -463,10 +503,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, BUZZER_CTR_Pin|GPIO_PIN_0|LORA_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, LED_03_Pin|BUZZER_CTR_Pin|LED_02_Pin|LED_01_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7|GPIO_PIN_8, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, SPI3_CS_Pin|SPI3_RST_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : SW_LEFT_Pin SW_DOWN_Pin SW_RIGHT_Pin SW_SELECT_Pin
                            SW_UP_Pin LSM_INT1_Pin LSM_INT2_Pin */
@@ -476,12 +519,25 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUZZER_CTR_Pin PD0 LORA_RST_Pin */
-  GPIO_InitStruct.Pin = BUZZER_CTR_Pin|GPIO_PIN_0|LORA_RST_Pin;
+  /*Configure GPIO pins : LED_03_Pin LED_02_Pin LED_01_Pin */
+  GPIO_InitStruct.Pin = LED_03_Pin|LED_02_Pin|LED_01_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : BUZZER_CTR_Pin SPI3_CS_Pin SPI3_RST_Pin */
+  GPIO_InitStruct.Pin = BUZZER_CTR_Pin|SPI3_CS_Pin|SPI3_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SW_SOS_Pin */
+  GPIO_InitStruct.Pin = SW_SOS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SW_SOS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PC6 */
   GPIO_InitStruct.Pin = GPIO_PIN_6;
@@ -496,20 +552,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LORA_DIO0_Pin */
-  GPIO_InitStruct.Pin = LORA_DIO0_Pin;
+  /*Configure GPIO pin : SPI3_DIO0_Pin */
+  GPIO_InitStruct.Pin = SPI3_DIO0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(LORA_DIO0_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(SPI3_DIO0_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -522,7 +578,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if(htim->Instance == TIM1)
     {
-//    	HAL_GPIO_TogglePin(BUZZER_CTR_GPIO_Port, BUZZER_CTR_Pin);
+    	if(tx_lora_frame.cmd_lora == CMD_LORA_SOS)
+    	{
+    		HAL_GPIO_TogglePin(BUZZER_CTR_GPIO_Port, BUZZER_CTR_Pin);
+    	}
+    	else
+    	{
+    		HAL_GPIO_WritePin(BUZZER_CTR_GPIO_Port, BUZZER_CTR_Pin, 0);
+    	}
     }
 }
 
@@ -535,6 +598,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 		u16_ADCVal = HAL_ADC_GetValue(&hadc1);
 		Voltage = (float)u16_ADCVal/4095*3.3*2;
 	}
+
 }
 /* USER CODE END 4 */
 

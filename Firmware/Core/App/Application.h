@@ -23,6 +23,8 @@ void Finish_Calib_Compass();
 void App_Trekking_Init();
 void BME280_Init();
 
+void SOS_Action();
+
 extern uint8_t DS3231_hour;
 extern uint8_t DS3231_minute;
 extern uint8_t DS3231_second;
