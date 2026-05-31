@@ -15,6 +15,7 @@ void App_Compass();
 void App_Weather();
 void App_CurrentTime();
 void App_UI();
+void App_GPS();
 
 void Calib_Compass();
 void Finish_Calib_Compass();
@@ -22,13 +23,17 @@ void Finish_Calib_Compass();
 void App_Trekking_Init();
 void BME280_Init();
 
+void SOS_Action();
+
 extern uint8_t DS3231_hour;
 extern uint8_t DS3231_minute;
 extern uint8_t DS3231_second;
 extern uint8_t DS3231_day;
 extern uint8_t DS3231_date;
 extern uint8_t DS3231_month;
-extern uint8_t DS3231_year;
+extern uint16_t DS3231_year;
+
+extern float Voltage;
 
 extern double accel_g[3];
 extern double roll;

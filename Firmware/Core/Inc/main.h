@@ -78,16 +78,27 @@ void Error_Handler(void);
 #define LSM_INT2_Pin GPIO_PIN_14
 #define LSM_INT2_GPIO_Port GPIOE
 #define LSM_INT2_EXTI_IRQn EXTI15_10_IRQn
-#define LORA_CS_Pin GPIO_PIN_0
-#define LORA_CS_GPIO_Port GPIOD
-#define LORA_RST_Pin GPIO_PIN_1
-#define LORA_RST_GPIO_Port GPIOD
-#define LORA_DIO0_Pin GPIO_PIN_2
-#define LORA_DIO0_GPIO_Port GPIOD
-#define LORA_DIO0_EXTI_IRQn EXTI2_IRQn
+#define LED_03_Pin GPIO_PIN_8
+#define LED_03_GPIO_Port GPIOD
+#define BUZZER_CTR_Pin GPIO_PIN_9
+#define BUZZER_CTR_GPIO_Port GPIOD
+#define LED_02_Pin GPIO_PIN_10
+#define LED_02_GPIO_Port GPIOD
+#define LED_01_Pin GPIO_PIN_11
+#define LED_01_GPIO_Port GPIOD
+#define SW_SOS_Pin GPIO_PIN_15
+#define SW_SOS_GPIO_Port GPIOD
+#define SW_SOS_EXTI_IRQn EXTI15_10_IRQn
+#define SPI3_CS_Pin GPIO_PIN_0
+#define SPI3_CS_GPIO_Port GPIOD
+#define SPI3_RST_Pin GPIO_PIN_1
+#define SPI3_RST_GPIO_Port GPIOD
+#define SPI3_DIO0_Pin GPIO_PIN_2
+#define SPI3_DIO0_GPIO_Port GPIOD
+#define SPI3_DIO0_EXTI_IRQn EXTI2_IRQn
 
 /* USER CODE BEGIN Private defines */
-
+extern TIM_HandleTypeDef htim1;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

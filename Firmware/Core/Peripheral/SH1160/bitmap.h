@@ -23,6 +23,7 @@ extern const unsigned char Compass[];
 extern const unsigned char GPS[];
 extern const unsigned char Settings[];
 extern const unsigned char icon_battery[];
+extern const unsigned char pin_cell[];
 
 
 #endif /* BITMAP_H_ */

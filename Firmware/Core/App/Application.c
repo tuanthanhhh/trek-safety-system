@@ -14,7 +14,10 @@
 #include "Application.h"
 #include "math.h"
 #include "UI.h"
+#include "gps_gp02.h"
+#include "slave_lora.h"
 
+#define HEADING_OFFSET	100
 
 BME280_Data_t BME280;
 uint8_t DS3231_hour;
@@ -23,7 +26,8 @@ uint8_t DS3231_second;
 uint8_t DS3231_day;
 uint8_t DS3231_date;
 uint8_t DS3231_month;
-uint8_t DS3231_year;
+uint16_t DS3231_year;
+
 
 double accel_g[3];
 double roll;
@@ -42,6 +46,7 @@ static MagCalib_t mag_calib = {
 
 void App_Trekking_Init()
 {
+	GPS_Init();
 	SH1106_Init();
 	BME280_Init();
 	DS3231_Init(&hi2c2);
@@ -52,6 +57,7 @@ void App_Compass()
 {
 	int16_t accel_data[3];
 	int16_t mag_data[3];
+
 	LSM303DLHC_AccReadXYZ(accel_data);
 	LSM303DLHC_MagReadXYZ(mag_data);
 
@@ -59,52 +65,99 @@ void App_Compass()
 	float ay = (float)accel_data[1];
 	float az = (float)accel_data[2];
 
-//	float mx = ((float)mag_data[0] + 235.5f) * 1.249f;
-//	float my = ((float)mag_data[1] + 108.0f) * 0.834f;
-//	float mz = ((float)mag_data[2] - mag_calib.z_offset)*mag_calib.z_scale;
+	float mx_raw = (float)mag_data[0];
+	float my_raw = (float)mag_data[1];
+	float mz_raw = (float)mag_data[2];
 
-	float mx = ((float)mag_data[0] - mag_calib.x_offset)*mag_calib.x_scale;
-	float my = ((float)mag_data[1] - mag_calib.y_offset)*mag_calib.y_scale;
-	float mz = ((float)mag_data[2] - mag_calib.z_offset)*mag_calib.z_scale;
+	/* Bias từ MagMaster */
+	float bx = -54.251f;
+	float by = 0.16f;
+	float bz = -42.926f;
+
+	/* Transformation Matrix từ MagMaster */
+	float M11 = 0.998f;
+	float M12 = -0.007f;
+	float M13 = -0.002f;
+
+	float M21 = 0.001f;
+	float M22 = 1.006f;
+	float M23 = -0.058f;
+
+	float M31 = -0.013f;
+	float M32 = 0.039f;
+	float M33 = 0.996f;
+
+	/* Trừ bias trước */
+	float mx_b = mx_raw - bx;
+	float my_b = my_raw - by;
+	float mz_b = mz_raw - bz;
+
+	/* Nhân ma trận calib */
+	float mx = M11 * mx_b + M12 * my_b + M13 * mz_b;
+	float my = M21 * mx_b + M22 * my_b + M23 * mz_b;
+	float mz = M31 * mx_b + M32 * my_b + M33 * mz_b;
+
+	/* Tính pitch roll từ accel */
 	pitch = atan2f(-ax, sqrtf(ay * ay + az * az));
-	roll = atan2f(ay,az);
+	roll  = atan2f(ay, az);
 
-	float x_heading = mx*cosf(pitch) + my*sinf(roll)*sinf(pitch) - mz*cosf(roll)*sinf(pitch);
-	float y_heading = my * cosf(roll) + mz*sinf(roll);
+	/* Tilt compensation */
+	float x_heading = mx * cosf(pitch)
+	                + my * sinf(roll) * sinf(pitch)
+	                - mz * cosf(roll) * sinf(pitch);
 
-	heading = atan2f(my,mx)* 57.2957795f;
+	float y_heading = my * cosf(roll)
+	                + mz * sinf(roll);
 
-	if(heading < 0.0f)
+	/* Heading */
+	heading = atan2f(y_heading, x_heading) * 57.2957795f;
+	heading = heading + HEADING_OFFSET;
+
+	if (heading < 0.0f)
 	{
-		heading += 360.0f;
+	    heading += 360.0f;
+	}
+	else if (heading >= 360.0f)
+	{
+	    heading -= 360.0f;
 	}
 
-	char buffer[20];
-	SH1106_GotoXY(1, 0);
-	sprintf(buffer, "Heading: %5.1f", heading);
-	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-	SH1106_GotoXY(1, 10);
-	sprintf(buffer, "%.1f,%.1f", mx,my);
-	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-	UI_state = Digital_Compass_Screen;
-	SH1106_GotoXY(1, 21);
-	sprintf(buffer, "%.1f", accel_data[0]);
-	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-	UI_state = Digital_Compass_Screen;
-	SH1106_GotoXY(1, 32);
-	sprintf(buffer, "%.1f", accel_data[1]);
-	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-	UI_state = Digital_Compass_Screen;
-	SH1106_GotoXY(1, 43);
-	sprintf(buffer, "%.1f", accel_data[2]);
-	SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
-	UI_state = Digital_Compass_Screen;
-	SH1106_UpdateScreen();
+	UI_DrawCompassRotateDial(heading);
+
 }
 void App_Weather()
 {
 	  BME280Calculation(&BME280);
 	  char buffer[50];
+}
+void App_GPS()
+{
+	if(UI_state_old != UI_state)
+	{
+		SH1106_Clear();
+		UI_state_old = UI_state;
+	}
+	if (current_gps.is_valid)
+	{
+		char buffer[20];
+//		tx_lora_frame.gps.lat = current_gps.latitude;
+//		tx_lora_frame.gps.lng = current_gps.longitude;
+
+		sprintf(buffer,"%f",current_gps.latitude);
+		SH1106_GotoXY(1, 12);
+		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+		sprintf(buffer,"%f",current_gps.longitude);
+		SH1106_GotoXY(1, 24);
+		SH1106_Puts(buffer, &Font_7x10, SH1106_COLOR_WHITE);
+	}
+	else
+	{
+		SH1106_GotoXY(1, 0);
+		SH1106_Puts("Waiting ...", &Font_7x10, SH1106_COLOR_WHITE);
+
+	}
+	SH1106_UpdateScreen();
+	HAL_Delay(UPDATE_SCREEN_TIME);
 }
 void App_CurrentTime()
 {
@@ -217,6 +270,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	case SW_RIGHT_Pin:
 		Update_Right_Action();
 		break;
+	case SW_SOS_Pin:
+		SOS_Action();
+		UI_state = SOS_Screen;
+		break;
 	default: break;
 	}
+}
+
+void SOS_Action()
+{
+	tx_lora_frame.cmd_lora = CMD_LORA_SOS;
+
 }
