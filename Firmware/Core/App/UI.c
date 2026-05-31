@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "slave_lora.h"
 #include "BME280.h"
+#include "stm32f4xx_it.h"
 #define DEG_TO_RAD 0.0174532925f
 
 
@@ -389,6 +390,7 @@ void Update_Main_Screen()
 	{
 		SH1106_Clear();
 		UI_state_old = UI_state;
+		HAL_TIM_Base_Stop_IT(&htim1);
 	}
 	SH1106_DrawBitmap(112, 1, icon_battery, 13, 8, SH1106_COLOR_WHITE);
 

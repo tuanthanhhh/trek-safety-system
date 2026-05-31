@@ -27,14 +27,14 @@ lora_frame_t tx_lora_frame =
 
 		.gps =
 		{
-				.lat = 10,
-				.lng = 10,
+				.lat = 0,
+				.lng = 0,
 		},
 
 		.sensor =
 		{
-				.temp = 20,
-				.humi = 30,
+				.temp = 0,
+				.humi = 0,
 		},
 
 		.crc = 0,

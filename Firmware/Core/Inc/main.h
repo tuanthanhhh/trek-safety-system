@@ -98,7 +98,7 @@ void Error_Handler(void);
 #define SPI3_DIO0_EXTI_IRQn EXTI2_IRQn
 
 /* USER CODE BEGIN Private defines */
-
+extern TIM_HandleTypeDef htim1;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

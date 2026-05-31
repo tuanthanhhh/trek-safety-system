@@ -129,7 +129,7 @@ int main(void)
 //	DS3231_SetDate(16);
 //	DS3231_SetMonth(5);
 //	DS3231_SetYear(2026);
-	HAL_TIM_Base_Start_IT(&htim1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -183,6 +183,7 @@ int main(void)
 		  {
 			  SOS_UI();
 			  UI_state_old = UI_state;
+			  HAL_TIM_Base_Start_IT(&htim1);
 		  }
 
 	  default:

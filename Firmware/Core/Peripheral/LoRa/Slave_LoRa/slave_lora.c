@@ -8,8 +8,8 @@
 #include "slave_lora.h"
 
 // Bộ nhớ đệm lưu trữ danh sách các gói tin (dựa trên packet_cnt) đã xử lý gần đây
-static uint8_t cache_index[32] = {0};            // Trỏ vị trí ghi đè vòng lặp cho từng Node
-static uint8_t seen_packet_cnt[32][CACHE_SIZE]; // Giả sử mạng có tối đa 32 Nodes
+static uint8_t cache_index[33] = {0};
+static uint8_t seen_packet_cnt[33][CACHE_SIZE];
 
 // Biến đếm packet_cnt nội bộ của chính Slave này (tăng dần mỗi lần tạo tin mới)
 static uint8_t slave_packet_cnt = 0;
@@ -17,59 +17,36 @@ static uint16_t time_interval   = 1000;
 
 static bool rx_flag = false;
 
-void Slave_Lora_Init(SPI_HandleTypeDef *hspi,
-        GPIO_TypeDef *cs_port, uint16_t cs_pin,
-        GPIO_TypeDef *rst_port, uint16_t rst_pin,
-        GPIO_TypeDef *dio0_port, uint16_t dio0_pin)
+// Hàm map ID từ 255 về slot 32
+static uint8_t map_id_to_index(uint8_t id)
 {
-	LED01_ON();
-	LED02_ON();
-	LED03_OFF();
-
-	memset(seen_packet_cnt, 0xFF, sizeof(seen_packet_cnt)); // 0xFF: Chưa có tin nào
-
-    #ifdef TRILE
-		GPS_Init();
-    #endif
-
-	Lora_Init(hspi,
-			cs_port, cs_pin,
-			rst_port, rst_pin,
-			dio0_port, dio0_pin);
-
-	HAL_Delay(1000);
+    if (id == 0xFF) return 32; // Master nằm ở slot cuối cùng
+    return id; // Các Slave (0-31) nằm ở vị trí tương ứng
 }
 
-/**
- * @brief Kiểm tra xem tin nhắn này đã từng được xử lý hay chưa
- */
 static bool is_Message_In_Cache(uint8_t origin_node_id, uint8_t packet_cnt)
 {
-    if (origin_node_id >= 32) return true; // Chống tràn mảng
+    uint8_t mapped_id = map_id_to_index(origin_node_id);
+    if (mapped_id >= 33) return true; // Vẫn giữ chốt an toàn
 
     for (int i = 0; i < CACHE_SIZE; i++)
     {
-        if (seen_packet_cnt[origin_node_id][i] == packet_cnt)
+        if (seen_packet_cnt[mapped_id][i] == packet_cnt)
         {
-            return true; // Tìm thấy -> Đã từng xử lý
+            return true;
         }
     }
-
-    return false; // Chưa tìm thấy -> Tin nhắn mới
+    return false;
 }
 
-/**
- * @brief Lưu trữ packet_cnt mới vào Cache bằng thuật toán ghi đè vòng lặp (Ring Buffer)
- */
 static void save_Message_To_Cache(uint8_t origin_node_id, uint8_t packet_cnt)
 {
-    if (origin_node_id >= 32) return;
+    uint8_t mapped_id = map_id_to_index(origin_node_id);
+    if (mapped_id >= 33) return;
 
-    uint8_t idx = cache_index[origin_node_id];
-    seen_packet_cnt[origin_node_id][idx] = packet_cnt;
-
-    // Tăng index, nếu vượt quá CACHE_SIZE thì quay lại 0
-    cache_index[origin_node_id] = (idx + 1) % CACHE_SIZE;
+    uint8_t idx = cache_index[mapped_id];
+    seen_packet_cnt[mapped_id][idx] = packet_cnt;
+    cache_index[mapped_id] = (idx + 1) % CACHE_SIZE;
 }
 
 /**
@@ -110,7 +87,7 @@ void Slave_Process_LoRa_Frame(lora_frame_t *p_frame)
             break;
 
         case CMD_LORA_PING:
-        	cmd_lora = CMD_LORA_PONG;
+        	tx_lora_frame.cmd_lora = CMD_LORA_PONG;
             break;
 
         default:
@@ -120,15 +97,16 @@ void Slave_Process_LoRa_Frame(lora_frame_t *p_frame)
     // 4. CHUYỂN TIẾP (Relay / Hop)
     if (p_frame->hop_count > 0)
     {
-        // Trừ đi 1 bước nhảy
-        p_frame->hop_count -= 1;
+    	// Tạo một khung tạm thời để chứa gói tin mượn đường
+		lora_frame_t relay_frame;
+		memcpy(&relay_frame, p_frame, sizeof(lora_frame_t));
 
-        // Đánh dấu mình là người vừa chuyển tiếp
-        p_frame->id_relay = ID_DEVICE;
+		relay_frame.hop_count -= 1;
+		relay_frame.id_relay = ID_DEVICE;
 
-        LoRa_Send_Frame(p_frame, p_frame->cmd_lora);
-
-        LoRa_startReceiving(&myLoRa);
+		// Truyền khung tạm này đi, giữ nguyên vẹn tx_lora_frame của bản thân
+		LoRa_Send_Frame(&relay_frame, relay_frame.cmd_lora);
+		LoRa_startReceiving(&myLoRa);
     }
 }
 
@@ -148,12 +126,12 @@ void Slave_Process_LoRa_Frame(lora_frame_t *p_frame)
 				switch (i)
 				{
 					case BTN_SOS:
-						cmd_lora      = CMD_LORA_SOS;
+						tx_lora_frame.cmd_lora = CMD_LORA_SOS;
 						time_interval = 200;
 						break;
 
 					case BTN_SELECT:
-						cmd_lora      = CMD_LORA_TRACKING;
+						tx_lora_frame.cmd_lora = CMD_LORA_TRACKING;
 						time_interval = 1000;
 						break;
 
@@ -213,6 +191,56 @@ bool Slave_Send_New_Message()
 	return check_tx;
 }
 
+static void Lora_Frame_Test(void)
+{
+    // 1. Thông số định tuyến mạng (Mesh/Routing)
+    tx_lora_frame.id_mesh    = ID_MESH;      // Lấy từ file .h (ví dụ 0x01)
+    tx_lora_frame.id_device  = ID_DEVICE;    // Lấy từ file .h (ví dụ 0x02)
+    tx_lora_frame.id_relay   = ID_DEVICE;    // Ban đầu người phát cũng là người chuyển tiếp
+
+    tx_lora_frame.cmd_lora   = CMD_LORA_TRACKING; // Trạng thái mặc định
+    tx_lora_frame.hop_count  = MAX_HOPS;     // Lấy từ file .h (ví dụ 3)
+    tx_lora_frame.packet_cnt = 0;            // Bộ đếm bắt đầu từ 0
+
+    // 2. Thông số ngoại vi (Sensor/Battery)
+    tx_lora_frame.batt       = 100;          // Giả định pin đầy 100%
+    tx_lora_frame.sensor.temp = 25;          // Nhiệt độ phòng 25 độ C
+    tx_lora_frame.sensor.humi = 80;          // Độ ẩm 80%
+
+    // 3. Tọa độ GPS (Vị trí mặc định - ví dụ: Bách Khoa TP.HCM)
+    // Nếu chưa có sóng GPS, tọa độ mặc định giúp hệ thống không gửi về 0.0 (tọa độ rác)
+    tx_lora_frame.gps.lat    = 10.7733f;
+    tx_lora_frame.gps.lng    = 106.6597f;
+
+    // 4. Reset mã kiểm tra lỗi
+    tx_lora_frame.crc        = 0;
+}
+
+void Slave_Lora_Init(SPI_HandleTypeDef *hspi,
+        GPIO_TypeDef *cs_port, uint16_t cs_pin,
+        GPIO_TypeDef *rst_port, uint16_t rst_pin,
+        GPIO_TypeDef *dio0_port, uint16_t dio0_pin)
+{
+	LED01_ON();
+	LED02_ON();
+	LED03_OFF();
+
+	memset(seen_packet_cnt, 0xFF, sizeof(seen_packet_cnt)); // 0xFF: Chưa có tin nào
+
+    #ifdef TRILE
+		GPS_Init();
+    #endif
+
+	Lora_Init(hspi,
+			cs_port, cs_pin,
+			rst_port, rst_pin,
+			dio0_port, dio0_pin);
+
+	Lora_Frame_Test();
+
+	HAL_Delay(1000);
+}
+
 void Slave_Lora_Loop()
 {
     #ifdef TRILE
@@ -221,12 +249,6 @@ void Slave_Lora_Loop()
 	#endif
 
 	static uint32_t last_send_tick = 0;
-
-	if(tx_lora_frame.cmd_lora == CMD_LORA_SOS && time_interval != 200)
-	{
-		time_interval = 200;
-	}
-	else if(time_interval != 1000) time_interval = 1000;
 
 	if (HAL_GetTick() - last_send_tick >= time_interval)
 	{
