@@ -1,0 +1,7 @@
+../Core/LoRa/Master_LoRa/master_lora.c:29:13:Master_Display_LCD_Page	88	static
+../Core/LoRa/Master_LoRa/master_lora.c:88:13:Master_Process_LoRa_Frame	24	static
+../Core/LoRa/Master_LoRa/master_lora.c:121:6:Master_Process_Buttons	16	static
+../Core/LoRa/Master_LoRa/master_lora.c:176:6:Master_Lora_Init	40	static
+../Core/LoRa/Master_LoRa/master_lora.c:197:6:Master_Send_USB_Message	40	static
+../Core/LoRa/Master_LoRa/master_lora.c:249:13:Master_Process_USB_Frame	16	static
+../Core/LoRa/Master_LoRa/master_lora.c:327:6:Master_Lora_Loop	8	static

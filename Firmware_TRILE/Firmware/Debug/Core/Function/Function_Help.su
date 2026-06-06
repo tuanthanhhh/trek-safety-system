@@ -1,0 +1,6 @@
+../Core/Function/Function_Help.c:32:6:Function_Help_Trigger	24	static
+../Core/Function/Function_Help.c:57:6:Function_Help_Is_Active	4	static
+../Core/Function/Function_Help.c:62:14:Get_Current_Heading	144	static
+../Core/Function/Function_Help.c:136:6:Function_Help_Draw	224	static
+../Core/Function/Function_Help.c:281:6:Function_Help_Handle_Button	16	static
+../Core/Function/Function_Help.c:338:6:Function_Help_Clear_Ignore	16	static

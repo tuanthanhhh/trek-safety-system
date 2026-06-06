@@ -1,0 +1,5 @@
+../Core/Function/Function_Gather.c:30:6:Function_Gather_Trigger	16	static
+../Core/Function/Function_Gather.c:49:6:Function_Gather_Is_Active	4	static
+../Core/Function/Function_Gather.c:54:14:Get_Current_Heading	144	static
+../Core/Function/Function_Gather.c:128:6:Function_Gather_Draw	224	static
+../Core/Function/Function_Gather.c:271:6:Function_Gather_Handle_Button	16	static

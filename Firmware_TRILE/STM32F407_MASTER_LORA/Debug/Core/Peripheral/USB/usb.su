@@ -1,0 +1,4 @@
+../Core/Peripheral/USB/usb.c:24:6:USB_Receive_Callback	24	static
+../Core/Peripheral/USB/usb.c:56:13:Parse_JSON_Data	48	static
+../Core/Peripheral/USB/usb.c:132:6:USB_ProcessReceivedData	520	static,ignoring_inline_asm
+../Core/Peripheral/USB/usb.c:156:6:Send_JSON_Message	344	static

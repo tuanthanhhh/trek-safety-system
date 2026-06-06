@@ -1,0 +1,5 @@
+../Core/Peripheral/LoRa/Slave_LoRa/slave_lora.c:50:24:Check_And_Update_Cache	24	static
+../Core/Peripheral/LoRa/Slave_LoRa/slave_lora.c:82:6:Slave_Process_LoRa_Frame	48	static
+../Core/Peripheral/LoRa/Slave_LoRa/slave_lora.c:199:6:Slave_Send_New_Message	16	static
+../Core/Peripheral/LoRa/Slave_LoRa/slave_lora.c:244:6:Slave_Lora_Init	40	static
+../Core/Peripheral/LoRa/Slave_LoRa/slave_lora.c:267:6:Slave_Lora_Loop	8	static

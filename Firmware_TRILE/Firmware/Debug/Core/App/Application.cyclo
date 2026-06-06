@@ -1,0 +1,11 @@
+../Core/App/Application.c:49:6:App_Trekking_Init	1
+../Core/App/Application.c:58:6:App_Compass	3
+../Core/App/Application.c:130:6:App_Weather	1
+../Core/App/Application.c:134:6:App_GPS	10
+../Core/App/Application.c:233:6:App_CurrentTime	1
+../Core/App/Application.c:244:6:App_UI	1
+../Core/App/Application.c:266:6:BME280_Init	1
+../Core/App/Application.c:288:6:Calib_Compass	5
+../Core/App/Application.c:304:6:Finish_Calib_Compass	3
+../Core/App/Application.c:324:6:HAL_GPIO_EXTI_Callback	16
+../Core/App/Application.c:378:6:SOS_Action	1

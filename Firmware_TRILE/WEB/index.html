@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hệ thống giám sát, định vị và đảm bảo an toàn cho người thám hiểm dựa trên giao thức LoRa - Web App điều khiển trung tâm">
+    <title>LoRa Tracker — Giám sát định vị IoT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ============================================================ -->
+    <!-- SOS ALERT OVERLAY - Hiển thị khi nhận được tín hiệu SOS      -->
+    <!-- ============================================================ -->
+    <div id="sosOverlay" class="sos-overlay hidden">
+        <div class="sos-overlay-content">
+            <div class="sos-icon-pulse">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <h2>🚨 CẢNH BÁO SOS</h2>
+            <p id="sosAlertText">Node XX đang phát tín hiệu cầu cứu!</p>
+            <div class="sos-coords" id="sosCoords"></div>
+            <div class="sos-actions">
+                <button id="sosLocateBtn" class="btn btn-sos-action">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+                    Định vị trên bản đồ
+                </button>
+                <button id="sosDismissBtn" class="btn btn-sos-dismiss">Đã xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MAP ACTION DIALOG (MARK / WARN)                               -->
+    <!-- ============================================================ -->
+    <div id="mapActionDialog" class="dialog-overlay hidden">
+        <div class="dialog-box">
+            <button id="mapActionCloseBtn" class="dialog-close-btn">&times;</button>
+            <div class="dialog-icon gather-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <h3>Hành động tại vị trí</h3>
+            <p>Chọn loại điểm bạn muốn đánh dấu:</p>
+            <div class="dialog-coords" id="mapActionCoords"></div>
+            <div class="dialog-actions" style="flex-direction: column;">
+                <button id="btnMarkPoint" class="btn btn-primary">📍 Đánh dấu Điểm đến (Mark)</button>
+                <button id="btnWarnPoint" class="btn btn-sos-ack">⚠️ Đánh dấu Nguy hiểm (Warn)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- NODE DETAIL DIALOG                                            -->
+    <!-- ============================================================ -->
+    <div id="nodeDetailDialog" class="dialog-overlay hidden">
+        <div class="dialog-box node-detail-box">
+            <button id="nodeDetailClose" class="dialog-close-btn">&times;</button>
+            <div class="node-detail-header">
+                <div class="node-detail-avatar" id="nodeDetailAvatar">N</div>
+                <div>
+                    <h3 id="nodeDetailTitle">Node 01</h3>
+                    <span class="node-detail-status" id="nodeDetailStatus">Hoạt động</span>
+                </div>
+            </div>
+            <div class="node-detail-grid">
+                <div class="detail-card">
+                    <span class="detail-label">🌡️ Nhiệt độ</span>
+                    <span class="detail-value" id="nodeDetailTemp">--°C</span>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-label">💧 Độ ẩm</span>
+                    <span class="detail-value" id="nodeDetailHumi">--%</span>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-label">🔋 Pin</span>
+                    <span class="detail-value" id="nodeDetailBat">--%</span>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-label">📶 RSSI</span>
+                    <span class="detail-value" id="nodeDetailRssi">-- dBm</span>
+                </div>
+                <div class="detail-card" style="grid-column: span 2;">
+                    <span class="detail-label">📍 Tọa độ</span>
+                    <span class="detail-value detail-value-small" id="nodeDetailCoords">--</span>
+                </div>
+            </div>
+            <div class="node-detail-actions">
+                <button id="nodeHelpBtn" class="btn btn-help">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    Gửi lệnh HỖ TRỢ (HELP)
+                </button>
+                <button id="nodePingBtn" class="btn btn-ghost">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Kiểm tra kết nối (Ping)
+                </button>
+                <button id="nodeSosAckBtn" class="btn btn-sos-ack hidden">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Xác nhận SOS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MAIN APPLICATION LAYOUT                                       -->
+    <!-- ============================================================ -->
+    <div class="app-container">
+        <!-- ======= SIDEBAR ======= -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Logo & Brand -->
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <img src="logo-bk.png" alt="Logo Bách Khoa" width="52" height="52" style="object-fit:contain;">
+                    </div>
+                    <div>
+                        <h1 class="brand-name">LoRa Tracker</h1>
+                        <span class="brand-sub">Giám sát định vị IoT</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connection Panel -->
+            <div class="connection-panel">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot disconnected"></span>
+                    <span class="status-text">Chưa kết nối</span>
+                </div>
+                <button id="connectBtn" class="btn btn-connect">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><polyline points="16 3 12 7 8 3"/></svg>
+                    Kết nối thiết bị
+                </button>
+            </div>
+
+            <!-- Master Info -->
+            <div class="master-info" id="masterInfo">
+                <div class="section-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    TRẠM MASTER
+                </div>
+                <div class="master-card">
+                    <div class="master-avatar">M</div>
+                    <div class="master-details">
+                        <span class="master-label">Tọa độ hiện tại</span>
+                        <span class="master-coords" id="masterCoords">Đang lấy vị trí...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Node List -->
+            <div class="node-list-section">
+                <div class="section-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    DANH SÁCH NODE HOẠT ĐỘNG
+                    <span class="node-count" id="nodeCount">0</span>
+                </div>
+                <div class="node-list" id="nodeList">
+                    <div class="node-list-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+                        <p>Chưa có Node nào kết nối</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Serial Log -->
+            <div class="serial-log-section">
+                <div class="section-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    SERIAL LOG
+                    <button class="log-clear-btn" id="logClearBtn" title="Xóa log">✕</button>
+                </div>
+                <div class="serial-log" id="serialLog">
+                    <div class="log-entry log-info">Sẵn sàng kết nối...</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ======= MAP AREA ======= -->
+        <main class="map-container">
+            <div id="map" class="map"></div>
+            <!-- Map Overlay Controls -->
+            <div class="map-overlay-top">
+                <div class="map-status-bar">
+                    <span class="map-status-item" id="mapStatusConn">
+                        <span class="status-dot disconnected"></span>
+                        Serial: Ngắt kết nối
+                    </span>
+                    <span class="map-status-item" id="mapStatusNodes">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                        Nodes: 0
+                    </span>
+                    <span class="map-status-item" id="mapStatusTime">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        --:--:--
+                    </span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- AUDIO for SOS Alert                                           -->
+    <!-- ============================================================ -->
+    <audio id="sosAudio" loop>
+        <!-- Fallback: We'll generate a beep via Web Audio API -->
+    </audio>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS                                                       -->
+    <!-- ============================================================ -->
+    <!-- Leaflet.js — Bản đồ miễn phí, không cần API Key -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script src="serial.js"></script>
+    <script src="map.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

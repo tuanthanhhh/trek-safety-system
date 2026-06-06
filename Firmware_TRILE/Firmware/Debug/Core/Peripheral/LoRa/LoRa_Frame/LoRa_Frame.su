@@ -1,0 +1,4 @@
+../Core/Peripheral/LoRa/LoRa_Frame/LoRa_Frame.c:45:10:calculate_crc16	24	static
+../Core/Peripheral/LoRa/LoRa_Frame/LoRa_Frame.c:74:6:Lora_Init	96	static
+../Core/Peripheral/LoRa/LoRa_Frame/LoRa_Frame.c:126:6:LoRa_Read_Frame	24	static
+../Core/Peripheral/LoRa/LoRa_Frame/LoRa_Frame.c:160:6:LoRa_Send_Frame	24	static
